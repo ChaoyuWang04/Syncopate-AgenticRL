@@ -74,7 +74,7 @@ one_step_off 那一格（被 bucket OOM 挡住）。
 > 这条线在测量方法上确实建立了优势（四步查因法、一天推翻自己 4 个假设），
 > **但优势要变成兑现物，必须走完「改 → 再测 → 过任务级尺子」。**
 >
-> [`NARRATIVE-AND-RESUME.md`](NARRATIVE-AND-RESUME.md) 第一部分。
+> [`NARRATIVE-AND-RESUME.md`](NARRATIVE-AND-RESUME.md) 第一部分（那份只写终点，未测的留 `〔 〕`）。
 
 ## 0.55 · ★★★ 占空比实测细节
 

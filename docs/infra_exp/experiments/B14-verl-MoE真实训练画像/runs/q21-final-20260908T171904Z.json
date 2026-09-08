@@ -1,0 +1,57 @@
+{
+  "experiment": "infra-probes/B14",
+  "run_id": "q21-final-20260908T171904Z",
+  "phase": "q21-cpu-preflight",
+  "status": "pass",
+  "entry": "uv run modal run modal_app/q21_real_training.py --run-id q21-final-20260908T171904Z",
+  "project_base_git_sha": "4c588df1c0941b01334bd0741e815d31a54098d4",
+  "verl_git_sha": "7cb65014d3a6c84f59458367df768999e4f36c67",
+  "modal_runtime_image_id": "im-ddKz6toouSd10HPSoofnFY",
+  "volume": "syncopate-home",
+  "evidence_path": "/vol/_audit/infra-probes/B14/q21-final-20260908T171904Z/attempt-83fb029032284e98ac00f0f4d28e37b0",
+  "raw_run_sha256": "8f94237a190e3f896d58e92289be4f305afa1c33b0d034612fb39d26259e0015",
+  "config": {
+    "path": "configs/infra/q21-b14-verl-qwen36-megatron-vllm.json",
+    "sha256": "44ab11fd74340fcee87cfa23263380a4cfed4d61430b12a1174219eb6c72ead7"
+  },
+  "environment": {
+    "python": "3.12.1",
+    "torch": "2.11.0+cu130",
+    "transformers": "5.9.0",
+    "vllm": "0.24.0",
+    "megatron-core": "0.18.0",
+    "megatron-bridge": "0.5.2",
+    "transformer-engine": "2.16.1",
+    "mbridge": "0.15.1"
+  },
+  "model": {
+    "path": "/vol/models/Qwen3.6-35B-A3B",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "architecture": "Qwen3_5MoeForConditionalGeneration",
+    "shards": 26,
+    "weight_bytes": 71903776776,
+    "config_sha256": "93a4693fa9d8392fbfccd4b3c9873f4bfdcb14fdede978b123d07d19675efe99",
+    "index_sha256": "41b9356101ebf8e7519e150dc811f80c4226e727301fbb032b890f006ed0be83"
+  },
+  "input": {
+    "manifest_path": "/vol/data/infra-probes/B14/gsm8k-740312ad-seed20260909/manifest.json",
+    "manifest_download_sha256": "61f647cd0936d0523a5f95486f288c8b41268c5fd939f71d1adb978ee11e3f0b",
+    "train_rows": 128,
+    "train_parquet_sha256": "59cc78450367adcfbc8270843d2abacf995f3ebe5e30e18bf54bcac55acfe653",
+    "train_prompt_tokens": {"min": 53, "mean": 83.671875, "p50": 81, "p90": 111, "max": 213},
+    "validation_rows": 32,
+    "validation_parquet_sha256": "522ec35548d4cc9d085f7b3e8244f430f0ad96bbdbc10277f42f6869f633b70e",
+    "validation_prompt_tokens": {"min": 57, "mean": 86.6875, "p50": 82, "p90": 118, "max": 147}
+  },
+  "gates": {
+    "scenario_schema": "pass",
+    "frozen_package_versions": "pass",
+    "required_modules": "pass",
+    "model_shards_nonempty": "pass",
+    "architecture_registered": "pass",
+    "input_revision_and_conversion": "pass",
+    "prompt_limit": "pass",
+    "gpu_training": "not_run_in_q21"
+  },
+  "cost": {"gpu_usd": 0, "cpu_and_build_actual": "not_queried"}
+}

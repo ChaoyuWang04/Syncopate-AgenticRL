@@ -19,6 +19,6 @@
 
 ## 当前入口与历史
 
-先做Q21场景冻结，再Q22真实训练画像；尚未启动新GPU运行。B11停止主动下钻，B12/B13暂存为参考，重开须真实画像触发。原始已测/未解结论不改写成全部正常，具体记录见[实验文件夹地图](experiments/README.md)。
+Q21 场景冻结已由 [B14](experiments/B14-verl-MoE真实训练画像/REPORT.md)完成；当前下一步是 Q22 按同一配置启动首次真实训练画像，尚未启动新GPU运行。B11停止主动下钻，B12/B13暂存为参考，重开须真实画像触发。原始已测/未解结论不改写成全部正常，具体记录见[实验文件夹地图](experiments/README.md)。
 
 infra-probes编号继续递增，REPORT仍放`experiments/Bxx-主题/REPORT.md`，不另起一套编号。旧`_audit/infra/`与归档只作历史。两个Lab独立；本组提供实验和必要[upstream DRAFT](../upstream/README.md)，正式PR由其负责人处理。

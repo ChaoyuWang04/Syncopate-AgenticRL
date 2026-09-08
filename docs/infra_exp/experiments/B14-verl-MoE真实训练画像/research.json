@@ -1,0 +1,75 @@
+{
+  "experiment": "infra-probes/B14",
+  "task": "Q21",
+  "queried_utc": "2026-09-08",
+  "scope": "Freeze the first real verl Megatron plus vLLM training scene; no GPU run in Q21.",
+  "source_heads_observed": {
+    "verl_main": "7cb65014d3a6c84f59458367df768999e4f36c67",
+    "megatron_lm_main": "c9b53d0a87cb926f47115259593ecfeb351ca29f",
+    "vllm_main": "8ebc5b0a182b3351a1c62fe73e97be2c489ed2a6",
+    "sglang_main": "30e7a3072d3f1e9bd70cd5e44146ca27c80522c4"
+  },
+  "selected": {
+    "verl_git_sha": "7cb65014d3a6c84f59458367df768999e4f36c67",
+    "docker_source_tag": "verlai/verl:uv.cu130.dev3",
+    "modal_runtime_image_id": "im-ddKz6toouSd10HPSoofnFY",
+    "model": "Qwen/Qwen3.6-35B-A3B",
+    "model_revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "dataset": "openai/gsm8k",
+    "dataset_revision": "740312add88f781978c0658806c59bc2815b9866"
+  },
+  "sources": [
+    {
+      "url": "https://github.com/verl-project/verl/blob/main/examples/grpo_trainer/run_qwen3_5_35b_megatron.sh",
+      "finding": "Official single-node eight-GPU Qwen3.5 35B MoE GRPO shape: Megatron TP2/EP8 and vLLM TP8; GDN uses padded BSHD and disables dynamic batching. The script uses vanilla mbridge compatibility mode."
+    },
+    {
+      "url": "https://github.com/verl-project/verl/blob/main/docker/Dockerfile.uv.cu130",
+      "finding": "The current universal CUDA 13 lock supplies the vLLM plus Megatron environment used by the selected source commit."
+    },
+    {
+      "url": "https://github.com/verl-project/verl/blob/main/docker/README.md",
+      "finding": "Official images include Megatron-LM, Apex and Transformer Engine; nightly source installation without dependencies is the documented development flow."
+    },
+    {
+      "url": "https://hub.docker.com/r/verlai/verl/tags",
+      "finding": "uv.cu130.dev3 and vllm024.dev2 exist. The README example vllm024.latest did not exist when resolved on 2026-09-08, so it was rejected."
+    },
+    {
+      "url": "https://huggingface.co/Qwen/Qwen3.6-35B-A3B",
+      "finding": "Apache-2.0 model; official card documents vLLM use, TP8, text-only and MTP options. Q21 keeps BF16 and disables MTP to avoid an extra variable."
+    },
+    {
+      "url": "https://github.com/vllm-project/recipes/blob/main/models/Qwen/Qwen3.6-35B-A3B.yaml",
+      "finding": "Official vLLM recipe identifies a 35B/3B-active MoE with 256 experts, vLLM minimum 0.17, BF16 and TP/TEP/DEP support. Runtime uses vLLM 0.24.0."
+    },
+    {
+      "url": "https://huggingface.co/datasets/openai/gsm8k",
+      "finding": "MIT, ungated, 7473 train and 1319 test rows; numeric final answers support verl's stock rule reward."
+    },
+    {
+      "url": "https://modal.com/docs/guide/gpu",
+      "finding": "Modal supports up to eight same-machine B200 GPUs; requests above two GPUs can wait longer."
+    },
+    {
+      "url": "https://modal.com/pricing",
+      "finding": "B200 price observed as USD 0.001736 per GPU-second; the registered 8 GPU by 2700 second hard cap is USD 37.4976."
+    },
+    {
+      "url": "https://modal.com/docs/reference/modal.Image",
+      "finding": "Modal Image.from_id provides an immutable reusable image handle; Q21 pins the built dependency layer by image ID."
+    }
+  ],
+  "code_findings": [
+    "No exact Qwen3.6 example name was found in verl main, so support is not claimed from naming alone.",
+    "Qwen3.6 config reports Qwen3_5MoeForConditionalGeneration and qwen3_5_moe; the active verl Megatron registry includes that architecture string.",
+    "Current verl main lock resolved torch 2.11.0+cu130, transformers 5.9.0, vLLM 0.24.0, Megatron-Core 0.18.0 and Megatron-Bridge 0.5.2 on Modal CPU.",
+    "The Megatron extra does not install flash-linear-attention; Q21 does not add it ad hoc because the selected Megatron path and lock are the object under test."
+  ],
+  "network_and_tool_failures": [
+    "Local Hugging Face Dataset Viewer and direct Parquet downloads timed out; the exact revision was downloaded successfully in Modal CPU.",
+    "Git clone over the local route failed; codeload succeeded locally, but archive bytes differed on a later cloud fetch. The image build therefore verifies git rev-parse HEAD at the pinned commit instead of tar bytes.",
+    "The documented vllm024.latest example tag returned manifest unknown; a current published universal image was used and then frozen by Modal image ID."
+  ],
+  "decision": "Proceed to Q22 with this one scene. A real eight-B200 load is still required before claiming end-to-end backend support or any performance baseline."
+}

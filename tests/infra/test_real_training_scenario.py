@@ -158,7 +158,9 @@ def test_registered_q21_config_matches_its_command_and_resource_contract():
     assert "trainer.total_training_steps=4" in command
     assert "trainer.n_gpus_per_node=8" in command
     assert "actor_rollout_ref.actor.megatron.expert_model_parallel_size=8" in command
-    assert "actor_rollout_ref.rollout.tensor_model_parallel_size=8" in command
+    assert "actor_rollout_ref.rollout.tensor_model_parallel_size=4" in command
+    assert "actor_rollout_ref.rollout.data_parallel_size=2" in command
+    assert "actor_rollout_ref.rollout.expert_parallel_size=8" in command
     assert value["source"]["modal_image_id"].startswith("im-")
 
 

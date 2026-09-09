@@ -1,0 +1,40 @@
+{
+  "experiment": "infra-probes/B14",
+  "task": "Q22",
+  "date_utc": "2026-09-09",
+  "status": "blocked_by_q23",
+  "source_git_sha": "3d5ff9c0723f90c140026dc0bb127123f4420be4",
+  "source_overlay": [
+    "configs/infra/q21-b14-verl-qwen36-megatron-vllm.json",
+    "modal_app/q22_real_training.py",
+    "syncopate/infra/q22_training_probe.py"
+  ],
+  "last_attempt_config_sha256": "8e04919112ffb1527724f25d11b97fbb50340b85789c9d75afa680653550b061",
+  "runtime": {
+    "verl_git_sha": "7cb65014d3a6c84f59458367df768999e4f36c67",
+    "base_modal_image_id": "im-ddKz6toouSd10HPSoofnFY",
+    "derived_modal_image_id": "im-f5lVoXWjiMfssHLIdnInzW",
+    "vllm": "0.24.0",
+    "torch": "2.11.0+cu130"
+  },
+  "attempts": [
+    {"run_id": "q22-smoke-20260909T0200Z", "status": "pre_training_error", "finding": "Hydra new profile token keys required plus-prefix", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-20260909T0200Z/attempt-141fed5225d54959b399dc360e8ca141"},
+    {"run_id": "q22-smoke-02-20260909T0310Z", "status": "external_reset", "finding": "Modal task reset; no program root cause assigned", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-02-20260909T0310Z/attempt-73f1a7287bb944da9daaafc94813b333"},
+    {"run_id": "q22-smoke-03-20260909T0330Z", "status": "pre_training_error", "finding": "legacy mbridge passed a removed Megatron-Core argument", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-03-20260909T0330Z/attempt-75260b6e22ef4412bad4522bd1a2d4cb"},
+    {"run_id": "q22-smoke-04-20260909T1138Z", "status": "pre_training_error", "finding": "official Megatron Bridge path required flash-linear-attention", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-04-20260909T1138Z/attempt-43bd4bf84d954d13b8dee9a5aec279cb"},
+    {"run_id": "q22-smoke-05-20260909T1145Z", "status": "pre_training_error", "finding": "flash-linear-attention alone did not provide fla.modules; fla-core was also required", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-05-20260909T1145Z/attempt-d0a051ed9bcc4058bdeba09f2f7cdf24"},
+    {"run_id": "q22-smoke-06-20260909T1151Z", "status": "stopped_invalid_context_plan", "elapsed_seconds": 1053.1, "peak_memory_mib": 66356, "finding": "native max_model_len 262144 invalidated the rollout memory plan", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-06-20260909T1151Z/attempt-d4dc2cdd621b4f809af28f07db1553bd"},
+    {"run_id": "q22-smoke-07-20260909T1212Z", "status": "program_error", "elapsed_seconds": 1065.8, "peak_memory_mib": 66210, "finding": "TP8 default ETP produced local expert intermediate 64; FlashInfer TRTLLM BF16 MoE requires 128 alignment", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-07-20260909T1212Z/attempt-b7dd663584444252b4fa84375945a8fd"},
+    {"run_id": "q22-smoke-08-20260909T1230Z", "status": "program_error", "elapsed_seconds": 1045.4, "peak_memory_mib": 67860, "finding": "TP4 DP2 with EP disabled still flattens TP and DP for expert tensor splitting, so local width remained 64", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-08-20260909T1230Z/attempt-328466ef0c6545f8ac51556a29aba64e"},
+    {"run_id": "q22-smoke-09-20260909T1251Z", "status": "program_error_then_operator_stop", "elapsed_seconds": 1868.9, "peak_memory_mib": 120220, "telemetry_valid_samples": 14664, "telemetry_invalid_samples": 0, "finding": "EP8 passed MoE kernel autotune; initial Megatron-to-vLLM fused expert reload failed at Qwen3.5 loader with shard_dim=0 for a 3D target tensor", "evidence_path": "/vol/_audit/infra-probes/B14/q22-smoke-09-20260909T1251Z/attempt-82ac55d5d4134b9dab63cd3bdc7b0fe4"}
+  ],
+  "observability": {
+    "nvidia_smi_interval_seconds": 1,
+    "nsys_version": "2025.6.1.190-256136895201v0",
+    "nsys_full_trace": false,
+    "dcgm_cli_available": false,
+    "torch_profiler_files": 0,
+    "torch_profiler_reason": "no global training step was reached"
+  },
+  "conclusion": "Q22 cannot produce a training performance baseline until Q23 resolves the fused MoE reload seam. No checkpoint was produced."
+}

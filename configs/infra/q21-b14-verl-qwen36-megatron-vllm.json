@@ -26,6 +26,7 @@
     "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
     "architecture": "Qwen3_5MoeForConditionalGeneration",
     "model_type": "qwen3_5_moe",
+    "expert_intermediate_size": 512,
     "mtp_enabled": false,
     "verified_files_evidence": "/vol/_audit/infra-probes/B01/b01-cpu-02"
   },
@@ -50,12 +51,12 @@
   },
   "parallelism": {
     "trainer": {"tp": 2, "pp": 1, "cp": 1, "ep": 8, "etp": 1},
-    "rollout": {"tp": 8},
+    "rollout": {"tp": 4, "dp": 2, "ep": 8},
     "allocation": "colocated",
     "roles": {
       "actor": "8 B200, Megatron TP2/EP8, colocated",
       "reference": "8 B200, Megatron TP2/EP8, colocated and offloaded while idle",
-      "rollout": "8 B200, vLLM TP8, colocated"
+      "rollout": "8 B200, vLLM attention DP2/TP4 and expert EP8, colocated"
     }
   },
   "execution": {
@@ -74,9 +75,43 @@
     "actor_offload": false,
     "rollout_offload": true,
     "use_mbridge": true,
-    "vanilla_mbridge": true,
+    "vanilla_mbridge": false,
     "dtype": "bfloat16",
     "recompute": "full"
+  },
+  "memory_plan": {
+    "gpu_memory_gb_per_gpu": 180.0,
+    "theoretical_model_state_gb_per_gpu": 89.305924626,
+    "vllm_gpu_memory_utilization": 0.35,
+    "rollout_max_model_len": 1536,
+    "minimum_static_headroom_gb_per_gpu": 25.0,
+    "cudagraph_capture_sizes": [1, 2, 4, 8, 16, 32]
+  },
+  "observability": {
+    "telemetry_interval_seconds": 1,
+    "telemetry_queries": [
+      "gpu_utilization",
+      "memory_controller_utilization",
+      "memory_used",
+      "power_draw",
+      "sm_clock",
+      "memory_clock",
+      "temperature"
+    ],
+    "torch_profiler": {
+      "enabled": true,
+      "global_steps": [2],
+      "ranks": [0],
+      "discrete": true,
+      "contents": ["cpu", "cuda", "shapes"],
+      "profile_token_start": 16,
+      "profile_token_end": 32,
+      "exclude_profiled_steps_from_baseline": true
+    },
+    "nsys": {
+      "mode": "capability_only",
+      "training_trace_enabled": false
+    }
   },
   "observations": [
     "timing_s/generation",
@@ -118,7 +153,7 @@
     "actor_rollout_ref.actor.kl_loss_type=low_var_kl",
     "actor_rollout_ref.actor.entropy_coeff=0",
     "actor_rollout_ref.actor.megatron.use_mbridge=True",
-    "actor_rollout_ref.actor.megatron.vanilla_mbridge=True",
+    "actor_rollout_ref.actor.megatron.vanilla_mbridge=False",
     "actor_rollout_ref.actor.megatron.use_remove_padding=False",
     "actor_rollout_ref.actor.megatron.tensor_model_parallel_size=2",
     "actor_rollout_ref.actor.megatron.pipeline_model_parallel_size=1",
@@ -136,8 +171,15 @@
     "+actor_rollout_ref.actor.megatron.override_transformer_config.moe_permute_fusion=True",
     "+actor_rollout_ref.actor.megatron.override_transformer_config.moe_grouped_gemm=True",
     "actor_rollout_ref.rollout.name=vllm",
-    "actor_rollout_ref.rollout.tensor_model_parallel_size=8",
-    "actor_rollout_ref.rollout.gpu_memory_utilization=0.55",
+    "actor_rollout_ref.rollout.tensor_model_parallel_size=4",
+    "actor_rollout_ref.rollout.data_parallel_size=2",
+    "actor_rollout_ref.rollout.expert_parallel_size=8",
+    "actor_rollout_ref.rollout.gpu_memory_utilization=0.35",
+    "actor_rollout_ref.rollout.max_model_len=1536",
+    "actor_rollout_ref.rollout.enforce_eager=False",
+    "actor_rollout_ref.rollout.cudagraph_capture_sizes=[1,2,4,8,16,32]",
+    "actor_rollout_ref.rollout.max_num_seqs=128",
+    "actor_rollout_ref.rollout.max_num_batched_tokens=8192",
     "actor_rollout_ref.rollout.n=4",
     "actor_rollout_ref.rollout.dtype=bfloat16",
     "actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=1",

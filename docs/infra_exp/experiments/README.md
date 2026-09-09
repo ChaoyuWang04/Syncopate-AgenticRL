@@ -6,7 +6,8 @@
 
 | 目录 | 查什么 | 当前边界 |
 |---|---|---|
-| [B14-verl-MoE真实训练画像](B14-verl-MoE真实训练画像/REPORT.md) | verl + Megatron + vLLM、Qwen3.6 MoE、8×B200 的首个真实 GRPO 场景 | Q21 源码/镜像/输入/预算与 CPU 前置已冻结；Q22 GPU 画像未开始 |
+| [B14-verl-MoE真实训练画像](B14-verl-MoE真实训练画像/REPORT.md) | verl + Megatron + vLLM、Qwen3.6 MoE、8×B200 的首个真实 GRPO 场景 | Q21 已完成；Q22 在真实权重交接处发现 vLLM 融合 MoE loader 阻塞，等待 B15 |
+| [B15-vLLM融合MoE权重重载](B15-vLLM融合MoE权重重载/REPORT.md) | Megatron 融合专家权重到 vLLM modular RoutedExperts 的 EP8 重载兼容性 | Q23 当前 P0；背景和根因已冻结，尚未做修法 A/B |
 
 ## 训推数值差异：主调查链与两个分支
 

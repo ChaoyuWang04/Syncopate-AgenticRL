@@ -439,7 +439,7 @@ def p_vllm() -> dict:
 
 
 
-# ─────────────────────────── ★ 版本核对（每个组件独立使用最新稳定版） ───────────────────────────
+# ─────────────────────────── 历史镜像 PyPI 漂移诊断（不能替代新GPU入口的共享版本闸） ───────────────────────────
 VERSION_WATCH = ["torch", "vllm", "verl", "transformers", "flash-linear-attention", "flash-attn", "flashinfer-jit-cache", "flashinfer-cubin",
                  "flashinfer-python", "triton", "peft", "tensordict", "numpy", "nvidia-cutlass-dsl", "huggingface-hub", "ray"]
 
@@ -475,7 +475,12 @@ json.dump(out, open("/tmp/versions.json", "w"))
     return _record(
         "versions",
         r["rc"] == 0 and bool(rows) and not not_latest and not lookup_failed,
-        {"rows": rows, "not_latest": not_latest, "lookup_failed": lookup_failed},
+        {
+            "scope": "legacy_pypi_diagnostic_only",
+            "rows": rows,
+            "not_latest": not_latest,
+            "lookup_failed": lookup_failed,
+        },
     )
 
 

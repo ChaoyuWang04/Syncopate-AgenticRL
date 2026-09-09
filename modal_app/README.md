@@ -8,7 +8,7 @@
 ## B14 真实训练场景
 
 - [q21_real_training.py](q21_real_training.py) 只执行 Q21 Modal CPU 前置：使用固定 runtime image ID，核对 verl/Megatron/vLLM 依赖、模型分片和架构注册，下载固定 GSM8K revision 并生成不可覆盖的 train/validation Parquet。它不会申请 GPU。
-- [q22_real_training.py](q22_real_training.py) 消费同一配置；本地入口先验证6小时内生成的最新版清单，任何组件不是其自身最新稳定版、缺最新 `main` SHA或状态未通过都会在申请GPU前拒绝。通过后才申请单机8×B200，持续写1秒 `nvidia-smi` 遥测，只在global step 2对actor rank 0做一次Torch CPU/CUDA/shape profile；nsys只检查可用性，不包住整场训练。检测到分布式worker终态错误会收掉本实验进程组，避免Ray挂住继续计费。
+- [q22_real_training.py](q22_real_training.py) 消费同一配置；入口先启动同一目标镜像的纯CPU `version_preflight`，从目标venv读取真实安装版本，查询每个登记组件的PyPI官方最新稳定版和GitHub默认分支最新SHA，把清单写入B15证据目录。任何组件不是其自身最新版、缺SHA、查询失败、清单超过6小时或CPU/GPU镜像身份不同，都会在申请GPU前拒绝。通过后才申请单机8×B200，持续写1秒 `nvidia-smi` 遥测，只在global step 2对actor rank 0做一次Torch CPU/CUDA/shape profile；nsys只检查可用性，不包住整场训练。检测到分布式worker终态错误会收掉本实验进程组，避免Ray挂住继续计费。
 - 唯一训练参数见 [B14 配置](../configs/infra/q21-b14-verl-qwen36-megatron-vllm.json)，结论和精确证据见 [B14 REPORT](../docs/infra_exp/experiments/B14-verl-MoE真实训练画像/REPORT.md)。其中模型、输入、并行和观测继续作为唯一来源，旧依赖清单已标为 `blocked_stale_stack`；Q23原位换成逐组件最新版清单后才能重跑。
 
 ```bash

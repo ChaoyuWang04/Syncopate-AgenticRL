@@ -93,6 +93,8 @@ modal run modal_app/stack_probe.py --steps versions,gpu,nccl
 modal run --detach modal_app/stack_probe.py --steps pytest
 ```
 
+这里的 `stack_probe --steps versions` 只检查历史镜像的广义PyPI漂移，用于盘点旧环境；它不记录各仓库最新SHA，不能替代新GPU入口必须调用的共享 `syncopate.infra.version_policy` 硬闸。
+
 ### 保留的业务数据和训练入口（原排期已停止）
 
 现有代码中的业务阶段仍必须调用下列入口；新的真实场景入口按Q21准备与按需实现，不能靠文档绕过现有身份闸：
@@ -147,7 +149,7 @@ Modal 层不得复制训练命令、模型路径或预算。
 
 | 判据 | 证明什么 |
 |---|---|
-| versions | 调度前6小时内分别查询每个直接组件的官方最新稳定版与最新 `main` SHA；实装版逐项等于其自身最新版。查询失败、旧版或缺SHA即失败，不接受兼容性豁免 |
+| versions | GPU调度前先在同一镜像的CPU函数调用共享 `version_policy` 检查：读取真实实装版，查询每个直接组件的官方最新稳定版与最新 `main` SHA并落盘；6小时过期、镜像变化、查询失败、旧版或缺SHA即失败 |
 | models | 本地权重字节与来源声明一致 |
 | gpu | 架构正确，关键 kernel 前向与反向均通过 |
 | nccl | 目标双卡拓扑真实可通信 |

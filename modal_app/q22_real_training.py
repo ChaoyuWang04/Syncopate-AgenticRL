@@ -49,6 +49,42 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+@app.function(image=image, volumes={"/vol": vol}, cpu=2, memory=4096, timeout=600, retries=0)
+def version_preflight(run_id: str) -> dict:
+    """Resolve official releases from the exact image before requesting a GPU."""
+    sys.path.insert(0, REMOTE_SOURCE)
+    from syncopate.infra.probe_run import reserve_attempt
+    from syncopate.infra.version_policy import resolve_latest_stack_manifest
+
+    scenario = json.loads(Path(REMOTE_CONFIG).read_text())
+
+    def installed_version(distribution: str) -> str:
+        completed = subprocess.run(
+            [
+                "/opt/verl-q21/.venv/bin/python",
+                "-c",
+                "import importlib.metadata,sys; print(importlib.metadata.version(sys.argv[1]))",
+                distribution,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if completed.returncode:
+            raise RuntimeError(completed.stderr.strip() or f"missing distribution {distribution}")
+        return completed.stdout.strip()
+
+    manifest = resolve_latest_stack_manifest(
+        scenario["source"]["version_policy"], installed_version=installed_version
+    )
+    manifest["modal_image_id"] = os.environ.get("MODAL_IMAGE_ID")
+    out = reserve_attempt(Path("/vol/_audit/infra-probes"), "B15", run_id)
+    manifest["evidence_path"] = str(out / "version-manifest.json")
+    _write_json(out / "version-manifest.json", manifest)
+    vol.commit()
+    return manifest
+
+
 @app.function(
     image=image,
     volumes={"/vol": vol},
@@ -58,7 +94,7 @@ def _sha256(path: Path) -> str:
     timeout=2700,
     retries=0,
 )
-def gpu_profile(run_id: str) -> dict:
+def gpu_profile(run_id: str, version_manifest: dict) -> dict:
     sys.path.insert(0, REMOTE_SOURCE)
     from syncopate.infra.probe_run import reserve_attempt
     from syncopate.infra.q22_training_probe import (
@@ -72,7 +108,9 @@ def gpu_profile(run_id: str) -> dict:
     from syncopate.infra.version_policy import validate_latest_stack_manifest
 
     scenario = json.loads(Path(REMOTE_CONFIG).read_text())
-    version_plan = validate_latest_stack_manifest(scenario["source"]["version_policy"])
+    version_plan = validate_latest_stack_manifest(version_manifest)
+    if version_manifest.get("modal_image_id") != os.environ.get("MODAL_IMAGE_ID"):
+        raise ValueError("version preflight and GPU run must use the same Modal image")
     plan = validate_q22_observability(scenario)
     out = reserve_attempt(Path("/vol/_audit/infra-probes"), "B14", run_id)
     command = build_training_command(scenario, out)
@@ -214,6 +252,7 @@ def gpu_profile(run_id: str) -> dict:
 def main(run_id: str):
     from syncopate.infra.version_policy import validate_latest_stack_manifest
 
-    scenario = json.loads(CONFIG.read_text())
-    validate_latest_stack_manifest(scenario["source"]["version_policy"])
-    print(json.dumps(gpu_profile.remote(run_id), ensure_ascii=False, indent=2))
+    manifest = version_preflight.remote(run_id)
+    print(json.dumps(manifest, ensure_ascii=False, indent=2))
+    validate_latest_stack_manifest(manifest)
+    print(json.dumps(gpu_profile.remote(run_id, manifest), ensure_ascii=False, indent=2))

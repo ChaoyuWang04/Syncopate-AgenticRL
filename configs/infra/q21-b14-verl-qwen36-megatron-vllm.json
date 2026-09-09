@@ -32,6 +32,17 @@
         "mbridge",
         "flash-linear-attention"
       ],
+      "component_sources": {
+        "verl": {"distribution": "verl", "pypi_project": "verl", "github_repo": "verl-project/verl", "branch": "main"},
+        "torch": {"distribution": "torch", "pypi_project": "torch", "github_repo": "pytorch/pytorch", "branch": "main"},
+        "transformers": {"distribution": "transformers", "pypi_project": "transformers", "github_repo": "huggingface/transformers", "branch": "main"},
+        "vllm": {"distribution": "vllm", "pypi_project": "vllm", "github_repo": "vllm-project/vllm", "branch": "main"},
+        "megatron-core": {"distribution": "megatron-core", "pypi_project": "megatron-core", "github_repo": "NVIDIA/Megatron-LM", "branch": "main"},
+        "megatron-bridge": {"distribution": "megatron-bridge", "pypi_project": "megatron-bridge", "github_repo": "NVIDIA-NeMo/Megatron-Bridge", "branch": "main"},
+        "transformer-engine": {"distribution": "transformer-engine", "pypi_project": "transformer-engine", "github_repo": "NVIDIA/TransformerEngine", "branch": "main"},
+        "mbridge": {"distribution": "mbridge", "pypi_project": "mbridge", "github_repo": "ISEEKYAN/mbridge", "branch": "main"},
+        "flash-linear-attention": {"distribution": "flash-linear-attention", "pypi_project": "flash-linear-attention", "github_repo": "fla-org/flash-linear-attention", "branch": "main"}
+      },
       "components": {}
     }
   },

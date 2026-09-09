@@ -28,6 +28,8 @@ def test_registered_b14_stack_is_blocked_until_every_component_is_refreshed():
 
     assert policy["mode"] == "latest_each_component"
     assert policy["status"] == "blocked_stale_stack"
+    assert set(policy["component_sources"]) == set(policy["required_components"])
+    assert all(source["branch"] == "main" for source in policy["component_sources"].values())
     with pytest.raises(ValueError, match="status must be pass"):
         validate_latest_stack_manifest(policy)
 
@@ -157,5 +159,10 @@ def test_modal_q22_entry_requests_exactly_eight_b200s_and_never_enables_full_nsy
     assert "--python /opt/verl-q21/.venv/bin/python --no-deps" in source
     assert "build_training_command" in source
     assert source.count("validate_latest_stack_manifest") >= 3
+    assert "def version_preflight" in source
+    assert "resolve_latest_stack_manifest" in source
+    assert source.index("manifest = version_preflight.remote(run_id)") < source.index(
+        "gpu_profile.remote(run_id, manifest)"
+    )
     assert "build_nvidia_smi_command" in source
     assert "training_trace_enabled" not in source

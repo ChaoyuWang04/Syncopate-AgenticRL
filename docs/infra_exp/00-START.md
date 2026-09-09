@@ -8,6 +8,8 @@
 
 用户2026-09-08锁定：Modal最多8卡B200（按需分配）；RL框架verl/AReaL/ROLL/NeMo-RL/Miles/slime，以verl为主；训练FSDP2/Megatron；推理vLLM/SGLang/TensorRT-LLM；固定一MoE一dense。范围上限不等于每个组合已经支持。最低执行健康保留，详细正确性/质量评测在发现瓶颈并提出改动后按需验证。
 
+每次新运行必须让所选栈的每个直接组件分别使用自己的最新稳定版，并记录各自最新 `main` SHA。不能继承某个框架镜像里的整套旧锁来充当当前栈；最新版互不兼容时先记录兼容性阻塞，不通过降级继续跑。
+
 ## 阅读顺序
 
 1. [AGENTS](../../AGENTS.md)与项目记忆索引。
@@ -19,6 +21,6 @@
 
 ## 当前入口与历史
 
-Q21 场景冻结已由 [B14](experiments/B14-verl-MoE真实训练画像/REPORT.md)完成；当前下一步是 Q22 按同一配置启动首次真实训练画像，尚未启动新GPU运行。B11停止主动下钻，B12/B13暂存为参考，重开须真实画像触发。原始已测/未解结论不改写成全部正常，具体记录见[实验文件夹地图](experiments/README.md)。
+Q21/B14 的旧镜像运行已发现版本选择错误：它继承 verl 镜像并使用 vLLM 0.24.0，只能保留为历史负对照。当前下一步 Q23 是重新解析并安装每个组件各自的最新版；通过版本闸后才恢复 Q22 真实训练画像。B11停止主动下钻，B12/B13暂存为参考，重开须真实画像触发。原始已测/未解结论不改写成全部正常，具体记录见[实验文件夹地图](experiments/README.md)。
 
 infra-probes编号继续递增，REPORT仍放`experiments/Bxx-主题/REPORT.md`，不另起一套编号。旧`_audit/infra/`与归档只作历史。两个Lab独立；本组提供实验和必要[upstream DRAFT](../upstream/README.md)，正式PR由其负责人处理。

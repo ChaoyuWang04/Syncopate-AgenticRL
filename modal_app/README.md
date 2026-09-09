@@ -3,13 +3,13 @@
 > 当前机器、依赖、Volume 和安全规则见
 > [docs/syncopate/05-COMPUTE.md](../docs/syncopate/05-COMPUTE.md)。
 > 当前任务见 [Infra TASKS](../docs/infra_exp/01-TASKS.md)。原业务数据构建与完整学习链已停止。
-> 以下是保留入口，不是执行清单。当前先真实训练画像再定位；Modal上限8卡B200，但现有双卡微探针不能冒充新的8卡真实训练入口。Q21 已冻结 B14 的 CPU 前置与训练配置；Q22 wrapper 已运行并在真实 MoE 权重交接处发现阻塞，当前顺序只认 Infra TASKS。
+> 以下是保留入口，不是执行清单。当前先真实训练画像再定位；Modal上限8卡B200，但现有双卡微探针不能冒充新的8卡真实训练入口。Q21/B14 的历史配置继承了 verl 镜像内的旧组件版本，已被最新版硬闸封住；当前先完成Q23全栈刷新，顺序只认 Infra TASKS。
 
 ## B14 真实训练场景
 
 - [q21_real_training.py](q21_real_training.py) 只执行 Q21 Modal CPU 前置：使用固定 runtime image ID，核对 verl/Megatron/vLLM 依赖、模型分片和架构注册，下载固定 GSM8K revision 并生成不可覆盖的 train/validation Parquet。它不会申请 GPU。
-- [q22_real_training.py](q22_real_training.py) 消费同一配置，申请单机 8×B200，持续写 1 秒 `nvidia-smi` 遥测，只在 global step 2 对 actor rank 0 做一次 Torch CPU/CUDA/shape profile；nsys 只检查可用性，不包住整场训练。检测到分布式 worker 终态错误会收掉本实验进程组，避免 Ray 挂住继续计费。
-- 唯一训练参数见 [B14 配置](../configs/infra/q21-b14-verl-qwen36-megatron-vllm.json)，结论和精确证据见 [B14 REPORT](../docs/infra_exp/experiments/B14-verl-MoE真实训练画像/REPORT.md)。Q22 必须消费这份配置和输入，不复制另一份 Hydra 参数；当前先完成 Q23/B15，不直接重跑。
+- [q22_real_training.py](q22_real_training.py) 消费同一配置；本地入口先验证6小时内生成的最新版清单，任何组件不是其自身最新稳定版、缺最新 `main` SHA或状态未通过都会在申请GPU前拒绝。通过后才申请单机8×B200，持续写1秒 `nvidia-smi` 遥测，只在global step 2对actor rank 0做一次Torch CPU/CUDA/shape profile；nsys只检查可用性，不包住整场训练。检测到分布式worker终态错误会收掉本实验进程组，避免Ray挂住继续计费。
+- 唯一训练参数见 [B14 配置](../configs/infra/q21-b14-verl-qwen36-megatron-vllm.json)，结论和精确证据见 [B14 REPORT](../docs/infra_exp/experiments/B14-verl-MoE真实训练画像/REPORT.md)。其中模型、输入、并行和观测继续作为唯一来源，旧依赖清单已标为 `blocked_stale_stack`；Q23原位换成逐组件最新版清单后才能重跑。
 
 ```bash
 uv run modal run modal_app/q21_real_training.py --run-id <new-q21-id>

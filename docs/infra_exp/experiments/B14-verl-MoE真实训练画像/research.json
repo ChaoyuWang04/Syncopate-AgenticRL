@@ -71,5 +71,10 @@
     "Git clone over the local route failed; codeload succeeded locally, but archive bytes differed on a later cloud fetch. The image build therefore verifies git rev-parse HEAD at the pinned commit instead of tar bytes.",
     "The documented vllm024.latest example tag returned manifest unknown; a current published universal image was used and then frozen by Modal image ID."
   ],
-  "decision": "Proceed to Q22 with this one scene. A real eight-B200 load is still required before claiming end-to-end backend support or any performance baseline."
+  "decision": "Preserve the model, input, parallelism and observability contract. Do not schedule this historical dependency set again. Q23 must replace it with an independently resolved latest-each-component stack before Q22 resumes.",
+  "policy_correction_2026_09_09": {
+    "status": "superseded_stale_stack",
+    "finding": "Q21 selected the dependency set inherited from a verl image instead of independently selecting the latest stable release of each direct component. The recorded runs remain valid historical evidence for that exact stack, but they are not a current baseline or upstream candidate.",
+    "required_next_step": "Q23 must resolve every direct component independently, record each latest stable release and upstream main SHA, install that exact set, and block GPU scheduling if the set is stale or incompatible."
+  }
 }

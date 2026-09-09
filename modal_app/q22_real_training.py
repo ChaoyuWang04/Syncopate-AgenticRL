@@ -69,8 +69,10 @@ def gpu_profile(run_id: str) -> dict:
         parse_nvidia_smi_rows,
         validate_q22_observability,
     )
+    from syncopate.infra.version_policy import validate_latest_stack_manifest
 
     scenario = json.loads(Path(REMOTE_CONFIG).read_text())
+    version_plan = validate_latest_stack_manifest(scenario["source"]["version_policy"])
     plan = validate_q22_observability(scenario)
     out = reserve_attempt(Path("/vol/_audit/infra-probes"), "B14", run_id)
     command = build_training_command(scenario, out)
@@ -84,6 +86,7 @@ def gpu_profile(run_id: str) -> dict:
         "config_sha256": _sha256(Path(REMOTE_CONFIG)),
         "modal_image_id": os.environ.get("MODAL_IMAGE_ID"),
         "observability_plan": plan,
+        "version_plan": version_plan,
         "command": command,
         "started_unix": time.time(),
     }
@@ -209,4 +212,8 @@ def gpu_profile(run_id: str) -> dict:
 
 @app.local_entrypoint()
 def main(run_id: str):
+    from syncopate.infra.version_policy import validate_latest_stack_manifest
+
+    scenario = json.loads(CONFIG.read_text())
+    validate_latest_stack_manifest(scenario["source"]["version_policy"])
     print(json.dumps(gpu_profile.remote(run_id), ensure_ascii=False, indent=2))

@@ -8,7 +8,7 @@
 
 当前默认批次浮点差并不承诺逐字节相等；batch invariance 是 beta，已验证列表不含 Qwen3.5/3.6。历史 #32992 是较旧 torch2.9 的 B200 compile 问题；#51187 是0.26/4060/dense/44并发，不能当成本项已复现或已有适用修复。先测存在性，不开 kernel 优化。来源与进一步调用源码记录在 research.json。
 
-补充调查：[GDN支持PR #45819](https://github.com/vllm-project/vllm/pull/45819) 与 [#49827](https://github.com/vllm-project/vllm/pull/49827) 均未合并；覆盖的后端/混合批次机制不同，本轮不采用未合并方案。Transformers最新稳定已是5.16.1，保留5.10.4因verl0.9约束<5.11；该patch版本Git tag查询404，以实际安装源码SHA和锁为准。
+补充调查：[GDN支持PR #45819](https://github.com/vllm-project/vllm/pull/45819) 与 [#49827](https://github.com/vllm-project/vllm/pull/49827) 均未合并；覆盖的后端/混合批次机制不同，本轮不采用未合并方案。当时因verl0.9约束保留Transformers5.10.4，而调查时最新稳定已是5.16.1；这项选择按2026-09-09新规则只能描述历史运行，不能作为当前baseline或upstream候选。原始结果仍绑定实际安装源码SHA和锁，不倒写身份。
 
 ## 设置与判据
 

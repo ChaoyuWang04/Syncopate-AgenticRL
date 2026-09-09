@@ -439,20 +439,7 @@ def p_vllm() -> dict:
 
 
 
-# ─────────────────────────── ★ 版本核对（守则⑯：装的是不是最新稳定版，不是要说明原因） ───────────────────────────
-# 白名单 = 「不是最新、且有原因」的登记表；不在表里又不是最新 ⇒ 判红（逼着把原因写下来）
-NOT_LATEST_ALLOWED = {
-    "torch": "vllm 0.28.0 钉 torch==2.13.0（PyPI 最新 2.14.0）",
-    "transformers": "verl 0.9.0 要求 <5.11（PyPI 最新 5.16.x）",
-    "tensordict": "verl 0.9.0 要求 <=0.10.0",
-    "numpy": "解析器按 verl/vllm 约束选的，非人为钉",
-    "triton": "随 torch 2.13 钉 3.7.x",
-    "flashinfer-python": "vllm 0.28.0 钉 0.6.16.post3",
-    "flash-attn": "社区预编译轮子（mjun0812）只有 2.8.3；PyPI 的 2.8.3.post1 只是打包修正，核代码相同",
-    "nvidia-cutlass-dsl": "vllm 0.28.0 钉 [cu13]==4.6.2（PyPI 最新 4.7.1）",
-    "flashinfer-jit-cache": "必须与 flashinfer-python 同版本（vllm 钉 0.6.16.post3）",
-    "flashinfer-cubin": "必须与 flashinfer-python 同版本（vllm 钉 0.6.16.post3）",
-}
+# ─────────────────────────── ★ 版本核对（每个组件独立使用最新稳定版） ───────────────────────────
 VERSION_WATCH = ["torch", "vllm", "verl", "transformers", "flash-linear-attention", "flash-attn", "flashinfer-jit-cache", "flashinfer-cubin",
                  "flashinfer-python", "triton", "peft", "tensordict", "numpy", "nvidia-cutlass-dsl", "huggingface-hub", "ray"]
 
@@ -482,9 +469,14 @@ json.dump(out, open("/tmp/versions.json", "w"))
     rows = {}
     for k, v in info.items():
         is_latest = base(v["installed"]) == v["latest_stable"]
-        rows[k] = {**v, "is_latest": is_latest, "reason": None if is_latest else NOT_LATEST_ALLOWED.get(k)}
-    unexplained = [k for k, v in rows.items() if not v["is_latest"] and not v["reason"]]
-    return _record("versions", r["rc"] == 0 and bool(rows) and not unexplained, {"rows": rows, "unexplained_not_latest": unexplained})
+        rows[k] = {**v, "is_latest": is_latest}
+    not_latest = [k for k, v in rows.items() if not v["is_latest"]]
+    lookup_failed = [k for k, v in rows.items() if str(v["latest_stable"]).startswith("?")]
+    return _record(
+        "versions",
+        r["rc"] == 0 and bool(rows) and not not_latest and not lookup_failed,
+        {"rows": rows, "not_latest": not_latest, "lookup_failed": lookup_failed},
+    )
 
 
 # ─────────────────────────── FA4（只在 sm_100+ 有意义） ───────────────────────────

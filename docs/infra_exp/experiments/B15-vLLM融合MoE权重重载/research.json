@@ -3,7 +3,12 @@
   "task": "Q23",
   "queried_utc": "2026-09-09",
   "trigger": "/vol/_audit/infra-probes/B14/q22-smoke-09-20260909T1251Z/attempt-82ac55d5d4134b9dab63cd3bdc7b0fe4/",
-  "frozen_stack": {"verl_git_sha": "7cb65014d3a6c84f59458367df768999e4f36c67", "vllm": "0.24.0", "torch": "2.11.0+cu130", "model": "Qwen/Qwen3.6-35B-A3B"},
+  "frozen_stack": {
+    "verl_git_sha": "7cb65014d3a6c84f59458367df768999e4f36c67",
+    "vllm": "0.24.0",
+    "torch": "2.11.0+cu130",
+    "model": "Qwen/Qwen3.6-35B-A3B"
+  },
   "facts": [
     "The failing Qwen3.5 loader slices a fused expert tensor by expert and forwards a 2D source to RoutedExperts.weight_loader.",
     "The destination w13 parameter seen by the generic loader is 3D after local expert selection; shard_dim=0 is therefore the expert or logical-projection axis rather than a valid matrix data axis.",
@@ -12,12 +17,36 @@
     "verl issue 6615 covered the exact DP2/TP4/EP8 socket layout and was fixed by PR 6620; the selected verl SHA already passed socket creation, so it is not the observed failure."
   ],
   "sources": [
-    {"url": "https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/layers/fused_moe/routed_experts.py", "finding": "Current unified loader recognizes fused 3D expert weights, orients them, splits w1/w3, and loads local experts."},
-    {"url": "https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/models/qwen3_5.py", "finding": "Current Qwen3.5 model no longer contains the v0.24.0 per-expert load_fused_expert_weights path observed in the failing image."},
-    {"url": "https://github.com/vllm-project/vllm/releases", "finding": "v0.28.0 is the latest stable release observed on 2026-09-09; upgrading from v0.24.0 crosses several releases and must be dependency-tested rather than assumed compatible."},
-    {"url": "https://github.com/verl-project/verl/issues/4979", "finding": "Existing closed report shows Megatron EP expert loading can fail at the vLLM model loader boundary, but its older vLLM 0.11 signature differs from B14."},
-    {"url": "https://github.com/verl-project/verl/issues/6615", "finding": "DP greater than one plus EP had a separate ZMQ socket collision in the same TP4/DP2/EP8 shape."},
-    {"url": "https://github.com/verl-project/verl/pull/6620", "finding": "Merged fix derives the weight-sync receiver rank from DP-local rank and TP rank; this is separate from the tensor-layout failure observed after transfer."}
+    {
+      "url": "https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/layers/fused_moe/routed_experts.py",
+      "finding": "Current unified loader recognizes fused 3D expert weights, orients them, splits w1/w3, and loads local experts."
+    },
+    {
+      "url": "https://github.com/vllm-project/vllm/blob/main/vllm/model_executor/models/qwen3_5.py",
+      "finding": "Current Qwen3.5 model no longer contains the v0.24.0 per-expert load_fused_expert_weights path observed in the failing image."
+    },
+    {
+      "url": "https://github.com/vllm-project/vllm/releases",
+      "finding": "v0.28.0 is the latest stable release observed on 2026-09-09; upgrading from v0.24.0 crosses several releases and must be dependency-tested rather than assumed compatible."
+    },
+    {
+      "url": "https://github.com/verl-project/verl/issues/4979",
+      "finding": "Existing closed report shows Megatron EP expert loading can fail at the vLLM model loader boundary, but its older vLLM 0.11 signature differs from B14."
+    },
+    {
+      "url": "https://github.com/verl-project/verl/issues/6615",
+      "finding": "DP greater than one plus EP had a separate ZMQ socket collision in the same TP4/DP2/EP8 shape."
+    },
+    {
+      "url": "https://github.com/verl-project/verl/pull/6620",
+      "finding": "Merged fix derives the weight-sync receiver rank from DP-local rank and TP rank; this is separate from the tensor-layout failure observed after transfer."
+    }
   ],
-  "decision": "Do not rerun the full eight-GPU scene or reduce EP to hide the seam. First validate a supported newer vLLM stack or a minimal experimental loader fix with a real fused expert tensor, then return to B14."
+  "decision": "Treat vLLM 0.24.0 only as a historical negative control. First rebuild the complete direct stack from each component latest stable release and rerun the real handoff. Investigate the loader only if the failure still exists on that latest stack.",
+  "version_policy": {
+    "mode": "latest_each_component",
+    "status": "required_before_gpu",
+    "max_age_hours": 6,
+    "rule": "Resolve every direct component from its own official release source and record its upstream main SHA. An image or framework lock cannot select versions for other components. Incompatibility blocks the run and is recorded; downgrading is not an allowed workaround."
+  }
 }

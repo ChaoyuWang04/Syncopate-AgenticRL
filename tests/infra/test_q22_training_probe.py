@@ -12,6 +12,7 @@ from syncopate.infra.q22_training_probe import (
     parse_nvidia_smi_rows,
     validate_q22_observability,
 )
+from syncopate.infra.version_policy import validate_latest_stack_manifest
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,6 +21,15 @@ CONFIG = ROOT / "configs/infra/q21-b14-verl-qwen36-megatron-vllm.json"
 
 def registered_scenario():
     return json.loads(CONFIG.read_text())
+
+
+def test_registered_b14_stack_is_blocked_until_every_component_is_refreshed():
+    policy = registered_scenario()["source"]["version_policy"]
+
+    assert policy["mode"] == "latest_each_component"
+    assert policy["status"] == "blocked_stale_stack"
+    with pytest.raises(ValueError, match="status must be pass"):
+        validate_latest_stack_manifest(policy)
 
 
 def test_b14_memory_estimate_uses_folded_dense_and_expert_grids():
@@ -146,5 +156,6 @@ def test_modal_q22_entry_requests_exactly_eight_b200s_and_never_enables_full_nsy
     assert "from fla.modules import FusedRMSNormGated" in source
     assert "--python /opt/verl-q21/.venv/bin/python --no-deps" in source
     assert "build_training_command" in source
+    assert source.count("validate_latest_stack_manifest") >= 3
     assert "build_nvidia_smi_command" in source
     assert "training_trace_enabled" not in source

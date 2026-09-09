@@ -14,7 +14,7 @@
 
 本地5090可能承载其他Lab，不能假定空闲或按名称停止进程；不改变它们的环境/Volume/预算。
 
-### 既有 B200 镜像（历史实测，不是全硬件默认）
+### 既有 B200 镜像（仅作历史证据，禁止作为新运行版本基线）
 
 | 项目 | 当前值 |
 |---|---|
@@ -23,7 +23,7 @@
 | 已实现旧入口资源 | Modal CPU、1×B200或2×B200；不是新8卡入口已实现声明 |
 | 架构 | sm_100 |
 | 基础镜像 | CUDA 13.0 devel / Ubuntu 24.04 / Python 3.12 |
-| 主训练栈 | PyTorch 2.13.0、vLLM 0.28.0、verl 0.9.0、Transformers 5.10.4 |
+| 历史主训练栈 | PyTorch 2.13.0、vLLM 0.28.0、verl 0.9.0、Transformers 5.10.4；这些版本只描述旧镜像，不代表当前最新版组合 |
 | 注意力与线性注意力 | flash-attn 2.8.3、flash-linear-attention 0.5.2 |
 | 历史学生/本轮MoE优先复用 | `Qwen3.6-35B-A3B` |
 | 历史教师/本轮dense优先复用 | `Qwen3.8-27B` |
@@ -31,8 +31,8 @@
 
 新场景资源盘点见[2026-09-08资源记录](../infra_exp/storage/20260908-resources.md)：主MoE与dense索引引用分片均存在，未重哈希整模/加载。其他库存不增加主模型变量；公开数据尚未准备。新场景使用独立冻结配置，不继承学生/教师角色。
 
-保留业务的精确模型路径只认 [model_paths.py](../../syncopate/core/model_paths.py)，精确依赖只认
-[modal_app/stack/pyproject.toml](../../modal_app/stack/pyproject.toml) 和锁文件。
+保留业务的精确模型路径只认 [model_paths.py](../../syncopate/core/model_paths.py)，旧业务复现的精确依赖只认
+[modal_app/stack/pyproject.toml](../../modal_app/stack/pyproject.toml) 和锁文件。新infra运行不能继承这套锁作为当前版本基线。
 
 FlashAttention 4 因依赖冲突放在独立环境中，只用于对应探针和内核实验，不与主 vLLM 环境混装。
 
@@ -147,7 +147,7 @@ Modal 层不得复制训练命令、模型路径或预算。
 
 | 判据 | 证明什么 |
 |---|---|
-| versions | 实装版本与锁文件一致；偏离项有明确钉住原因 |
+| versions | 调度前6小时内分别查询每个直接组件的官方最新稳定版与最新 `main` SHA；实装版逐项等于其自身最新版。查询失败、旧版或缺SHA即失败，不接受兼容性豁免 |
 | models | 本地权重字节与来源声明一致 |
 | gpu | 架构正确，关键 kernel 前向与反向均通过 |
 | nccl | 目标双卡拓扑真实可通信 |

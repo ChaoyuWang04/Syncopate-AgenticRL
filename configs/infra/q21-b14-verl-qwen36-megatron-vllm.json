@@ -14,6 +14,25 @@
       "megatron-bridge": "0.5.2",
       "transformer-engine": "2.16.1",
       "mbridge": "0.15.1"
+    },
+    "version_policy": {
+      "mode": "latest_each_component",
+      "status": "blocked_stale_stack",
+      "reason": "This historical Q21 image inherited vLLM 0.24.0 and other versions from a verl image. Q23 must independently resolve and install the latest stable release of every required component before another GPU run.",
+      "resolved_at_utc": null,
+      "max_age_hours": 6,
+      "required_components": [
+        "verl",
+        "torch",
+        "transformers",
+        "vllm",
+        "megatron-core",
+        "megatron-bridge",
+        "transformer-engine",
+        "mbridge",
+        "flash-linear-attention"
+      ],
+      "components": {}
     }
   },
   "stack": {
